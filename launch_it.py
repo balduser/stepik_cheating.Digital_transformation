@@ -1,15 +1,16 @@
 import time
 from selenium import webdriver
-from selenium.webdriver.common.by import By
+
 
 email = "your_email"
 password = "your_password"
 
 
-# Для начала залогинимся
 browser = webdriver.Chrome()
+browser.implicitly_wait(4)
 browser.get('https://stepik.org/catalog?auth=login')
-time.sleep(2)
+# Для начала залогинимся
+print('Логинимся')
 browser.find_element_by_css_selector('input#id_login_email').send_keys(email)
 browser.find_element_by_css_selector('input#id_login_password').send_keys(password)
 browser.find_element_by_css_selector('button.sign-form__btn').click()
@@ -42,7 +43,7 @@ def selecting(args):
     """Отмечает галочками правильные ответы"""
 
     for a in args:
-        browser.find_element(By.XPATH, (f'//div[@data-type="choice-quiz"]//span[contains(text(), "{a}")]')).click()
+        browser.find_element_by_xpath(f'//div[@data-type="choice-quiz"]//span[contains(text(), "{a}")]').click() #(By.XPATH, (f'//div[@data-type="choice-quiz"]//span[contains(text(), "{a}")]')).click()
 
 
 def radio_right(args):
@@ -73,6 +74,7 @@ def matching(args):
                     else:
                         # Определим позицию, на которой расположен правильный ответ для рассматриваемого блока слева
                         position = [i for i, block in enumerate(rightside_blocks) if args[pair] in block.text][0]
+                        # Поднимаем блок на одну позицию
                         browser.find_elements_by_css_selector('button span.up-arrow_icon')[position].click()
     return True
 
@@ -92,13 +94,13 @@ def sorting(args):
                 break
 
 
-'''tasks = (  # number, link, function, arguments. Для тестов, где ответ один, аргументы должны быть в кортеже (,)!
+tasks = (  # number, link, function, arguments. Для тестов, где ответ один, аргументы должны быть в кортеже (,)!
     ('2.3.1', '/lesson/500465/step/1?unit=492021', matching, (
         {'Автоматизированные системы': 'Робототехника',
          'Устройства в быту': 'Интернет вещей',
          'Надежный способ': 'Системы распределенного реестра (блокчейн)',
          'Компьютерные алгоритмы': 'Искусственный интеллект'})),
-    ('2.3.2', '/lesson/500465/step/2?unit=492021', selecting, ('глобализация', 'международное', 'переход')),
+    ('2.3.2', '/lesson/500465/step/2?unit=492021', selecting, ('глобализация', 'международное', 'переход от аналоговых технологий')),
     ('2.5.1', '/lesson/500467/step/1?unit=492023', selecting, ('Снижение трансакционных', 'Рост', 'Снижение цены',)),
     ('2.5.2', '/lesson/500467/step/2?unit=492023', selecting, ('Сетевого эффекта',)),
     ('2.7.1', '/lesson/500512/step/1?unit=492068', selecting, ('Клиентоориентированность', 'Автоматизация', 'Отсутствие',)),
@@ -210,10 +212,8 @@ def sorting(args):
     ('10.5.2', '/lesson/583170/step/2?unit=577901', selecting, ('это «цифровой разрыв»',)),
     ('10.5.3', '/lesson/583170/step/3?unit=577901', selecting, ('Необновленное программное обеспечение (ПО)',)),
     ('10.5.4', '/lesson/583170/step/4?unit=577901', selecting, ('Максимально правдоподобная имитация голоса, изображения или видео',)),
-    
     ('11.1.2', '/lesson/501048/step/2?unit=492641', selecting, ('«Мы сейчас же начнем исследование того, как сейчас обстоят дела на предприятии»',)),
-    ('11.1.3', '/lesson/501048/step/3?unit=492641', selecting, ('Нужно уделить особое внимание трансформации оргкультуры',)),'''
-tasks = (
+    ('11.1.3', '/lesson/501048/step/3?unit=492641', selecting, ('Нужно уделить особое внимание трансформации оргкультуры',)),
     ('11.1.4', '/lesson/501048/step/4?unit=492641', selecting, ('1. Руководитель цифровой трансформации',)),
     ('11.1.5', '/lesson/501048/step/5?unit=492641', selecting, ('В нашем случае стейкхолдеры — это и руководство, и сотрудники, и клиенты.',)),
     ('11.1.6', '/lesson/501048/step/6?unit=492641', selecting, ('Решением может стать внедрение практик регулярного менеджмента.',)),
@@ -229,14 +229,14 @@ for task in tasks:
     try:
         print(f'Задание {task[0]}')
         browser.get(f'https://stepik.org{task[1]}')
-        time.sleep(4)
         if is_not_passed(task[1]):
             if is_failed(task[1]):
+                print('Попробуем ещё раз!')
                 browser.find_element_by_css_selector('button.again-btn').click()
                 time.sleep(4)
             task[2](task[3])
+            time.sleep(0.3)
             browser.find_element_by_css_selector('button.submit-submission').click()
-            time.sleep(4)
     except Exception as e:
         print('Что-то пошло не так: ', e)
 
